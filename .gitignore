@@ -1,0 +1,18 @@
+# Entornos virtuales
+venv/
+env/
+.env
+
+# Archivos de la base de datos vectorial (se generan localmente)
+db/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# (Opcional) Si tus PDFs son privados, puedes descomentar la siguiente línea:
+# data/

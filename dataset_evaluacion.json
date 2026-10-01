@@ -1,0 +1,30 @@
+[
+  {
+    "question": "¿Qué es el modelo de responsabilidad compartida de AWS?",
+    "ground_truth": "El modelo de responsabilidad compartida dicta que AWS es responsable de la seguridad de la nube (infraestructura física, hardware, red, hipervisor), mientras que el cliente es responsable de la seguridad en la nube (gestión de datos, configuración de firewalls, gestión de identidades y acceso (IAM), cifrado y parches del sistema operativo).[cite: 1]"
+  },
+  {
+    "question": "¿Cuál es la diferencia principal entre un Security Group y una Network ACL (NACL)?",
+    "ground_truth": "Un Security Group actúa a nivel de instancia como un firewall virtual y es 'stateful' (con estado), lo que significa que la información de estado se mantiene y el tráfico de retorno se permite automáticamente.[cite: 3] Una Network ACL actúa a nivel de subred y es 'stateless' (sin estado), por lo que las respuestas al tráfico entrante están sujetas a las reglas explícitas de salida, soportando tanto reglas de permiso como de denegación.[cite: 3]"
+  },
+  {
+    "question": "¿Qué es AWS CloudTrail y para qué se utiliza en seguridad?",
+    "ground_truth": "AWS CloudTrail es un servicio que registra información importante sobre cada llamada a la API y la actividad de los usuarios dentro de una cuenta (quién hizo qué y cuándo).[cite: 5] En seguridad, se utiliza para auditoría de cumplimiento, análisis de seguridad y solución de problemas, permitiendo identificar acciones no autorizadas.[cite: 5]"
+  },
+  {
+    "question": "¿Qué principio de seguridad fundamental se debe aplicar al configurar políticas en IAM?",
+    "ground_truth": "Se debe aplicar el principio de privilegio mínimo (Principle of least privilege).[cite: 1] Esto significa que se deben otorgar únicamente los permisos mínimos necesarios en la cuenta de AWS para realizar un rol laboral específico, comenzando por denegar todo el acceso y otorgándolo solo según sea necesario.[cite: 1, 2]"
+  },
+  {
+    "question": "¿Qué características proporciona Amazon S3 para proteger los datos en reposo contra eliminaciones accidentales o modificaciones no deseadas?",
+    "ground_truth": "Amazon S3 ofrece 'S3 Versioning', que preserva, recupera y restaura cada versión de cada objeto almacenado en el bucket.[cite: 4] También ofrece 'S3 Object Lock', que utiliza un modelo WORM (write-once-read-many) para prevenir que la versión de un objeto sea eliminada o sobrescrita por una cantidad de tiempo fija o indefinidamente.[cite: 4]"
+  },
+  {
+    "question": "¿Cuál es la diferencia entre la encriptación del lado del cliente (CSE) y la encriptación del lado del servidor (SSE)?",
+    "ground_truth": "En la encriptación del lado del cliente (CSE), la aplicación cifra los datos localmente antes de enviarlos a AWS y maneja de forma exclusiva las claves y algoritmos.[cite: 4] En la encriptación del lado del servidor (SSE), AWS cifra los datos en su nombre una vez que llegan a su destino, siendo un proceso transparente para el usuario al momento de acceder a ellos.[cite: 4]"
+  },
+  {
+    "question": "¿Cómo pueden colaborar Amazon CloudWatch y AWS CloudTrail en el monitoreo y respuesta a incidentes?",
+    "ground_truth": "CloudTrail monitorea y registra continuamente las actividades y acciones de los usuarios, mientras que CloudWatch monitorea el rendimiento y la salud operativa de los recursos y aplicaciones.[cite: 5] Al usarse juntos, se pueden crear paneles, notificaciones y alarmas personalizadas en CloudWatch basadas en métricas clave o eventos específicos registrados por CloudTrail.[cite: 5]"
+  }
+]
