@@ -1,16 +1,17 @@
-# 🛡️ AWS Cloud Security RAG (100% Local)
+# AWS Cloud Security RAG (100% Local)
 
 Un sistema **RAG (Retrieval-Augmented Generation) totalmente local y privado** diseñado para consultar documentos de seguridad en la nube de AWS. Construido con tecnología Open Source, sin dependencias de APIs de pago como OpenAI, asegurando la máxima privacidad de los datos.
 
-## ✨ Características Principales
+## Características Principales
 - **100% Local y Privado:** Utiliza **Ollama** con el modelo **Llama 3.1** y **ChromaDB** para la persistencia de vectores. Ningún dato sale de tu máquina.
-- **Soporte Multilingüe (Cross-lingual RAG):** Gracias al modelo de embeddings `paraphrase-multilingual-MiniLM-L12-v2`, puedes consultar en **español** documentos que están escritos en **inglés** y obtener respuestas precisas en español.
-- **Memoria Conversacional (History-Aware Retriever):** Capacidad de mantener el contexto en diálogos multi-turno. Utiliza técnicas de reformulación de consultas (*Query Reformulation* con *Few-Shot Prompting*) para resolver referencias anafóricas (pronombres o preguntas de seguimiento) antes de consultar la base de datos vectorial.
-- **Guardrails Anti-alucinación:** Prompt de sistema riguroso (Temperatura 0) diseñado para forzar al modelo a responder "No tengo información suficiente..." si la respuesta no se encuentra en el contexto proporcionado.
-- **Evaluación Científica:** Evaluado metodológicamente utilizando el framework **Ragas** para asegurar altas métricas de Fidelidad (*Faithfulness*) y Relevancia de respuesta.
-- **Interfaz estilo ChatGPT:** Interfaz limpia y responsiva construida con **Streamlit**, con indicador de memoria e inspección de consultas adaptadas y fuentes.
+- **Búsqueda Híbrida (Vectorial + BM25) y Re-Ranking (Cross-Encoder):** Combina recuperación semántica multilingüe (`paraphrase-multilingual-MiniLM-L12-v2`) con coincidencia léxica exacta (`IndiceBM25` + `Reciprocal Rank Fusion`) y re-ordenamiento neuronal (`cross-encoder/mmarco-mMiniLMv2-L12-H384-v1`) para capturar tanto conceptos generales como siglas técnicas poco frecuentes (`WORM`, `CloudHSM`, `WAF`).
+- **Memoria Conversacional (History-Aware Retriever):** Capacidad de mantener el contexto en diálogos multi-turno con ventana deslizante (*Sliding Window*), utilizando reformulación de consultas (*Query Reformulation* con *Few-Shot Prompting*) para resolver referencias anafóricas antes de consultar la base de datos.
+- **Guardrails Anti-alucinación y Seguridad OWASP LLM:** Prompt de sistema riguroso (Temperatura 0), aislamiento de contexto mediante delimitadores XML (`<contexto_documentos>`) contra *Indirect Prompt Injection* y validación/sanitización de entradas.
+- **Ingesta Dinámica de PDFs en Caliente:** Carga e indexación de nuevos manuales PDF directamente desde la interfaz web con validación de firma mágica (`%PDF-`), prevención de *Path Traversal*, deduplicación de fragmentos existentes y reconstrucción automática del índice léxico BM25 sin reiniciar el servidor.
+- **Evaluación Científica y Pruebas Automatizadas:** Evaluado metodológicamente con **Ragas** (*Context Precision*, *Context Recall*, *Faithfulness* y *Answer Relevancy*) e incluye una suite de 46 tests automatizados (`test_rag.py`).
+- **Interfaz Sobria y Minimalista:** Interfaz construida con **Streamlit**, con transmisión de respuestas en vivo (*Streaming*), tooltips técnicos interactivos, glosario integrado, persistencia de fuentes consultadas y manejo de errores.
 
-## 🚀 Instalación y Uso
+## Instalación y Uso
 
 1. **Clonar el repositorio:**
    ```bash
@@ -44,17 +45,24 @@ Un sistema **RAG (Retrieval-Augmented Generation) totalmente local y privado** d
    streamlit run app.py
    ```
 
-## 🧪 Evaluación del Modelo (Ragas)
-Este proyecto incluye un script de evaluación (`evaluar_rag.py`) que genera un dataset (*Ground Truth*) y evalúa el pipeline contra métricas de *Context Precision*, *Context Recall*, *Faithfulness*, y *Answer Relevancy*.
+## Pruebas de Seguridad, Calidad y Evaluación (Ragas)
 
-```bash
-python evaluar_rag.py
-```
+1. **Suite de Pruebas Unitarias y de Seguridad (`unittest`):**
+   Valida el truncamiento de entradas, ventana deslizante de memoria, aislamiento XML contra *Prompt Injection* e integridad del dataset:
+   ```bash
+   python test_rag.py
+   ```
 
-## 🛠️ Stack Tecnológico
-*   **LLM:** Llama 3.1 (vía Ollama)
-*   **Embeddings:** HuggingFace (`paraphrase-multilingual-MiniLM-L12-v2`)
-*   **Vector Store:** ChromaDB
-*   **Orquestación:** LangChain
-*   **Evaluación:** Ragas
-*   **Frontend:** Streamlit
+2. **Evaluación Científica del Modelo (`Ragas`):**
+   Evalúa el pipeline completo contra el *Ground Truth* en métricas de *Context Precision*, *Context Recall*, *Faithfulness* y *Answer Relevancy*:
+   ```bash
+   python evaluar_rag.py
+   ```
+
+## Stack Tecnológico
+* **LLM:** Llama 3.1 (vía Ollama)
+* **Embeddings:** HuggingFace (`paraphrase-multilingual-MiniLM-L12-v2`)
+* **Vector Store:** ChromaDB
+* **Orquestación:** LangChain
+* **Evaluación:** Ragas
+* **Frontend:** Streamlit
