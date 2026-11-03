@@ -71,10 +71,10 @@ def cargar_y_dividir_documentos(directorio_data="data"):
     documentos = loader.load()
     
     if not documentos:
-        print("⚠️ No se encontraron documentos en la carpeta data/.")
+        print("[AVISO] No se encontraron documentos en la carpeta data/.")
         return []
         
-    print(f"✅ Se cargaron {len(documentos)} páginas. Limpiando ruido y normalizando páginas...")
+    print(f"[CARGA] Se cargaron {len(documentos)} páginas. Limpiando ruido y normalizando páginas...")
     
     documentos_limpios = []
     for doc in documentos:
@@ -98,7 +98,7 @@ def cargar_y_dividir_documentos(directorio_data="data"):
         frag for frag in fragmentos_brutos
         if len(frag.page_content.strip()) >= MIN_CHUNK_LENGTH
     ]
-    print(f"✅ Se generaron {len(fragmentos)} fragmentos limpios (descartados {len(fragmentos_brutos) - len(fragmentos)} micro-fragmentos de ruido).")
+    print(f"[CHUNKS] Se generaron {len(fragmentos)} fragmentos limpios (descartados {len(fragmentos_brutos) - len(fragmentos)} micro-fragmentos de ruido).")
     
     return fragmentos
 
@@ -182,7 +182,7 @@ def crear_o_cargar_vectorstore(fragmentos, directorio_db="db"):
         embedding=embeddings, 
         persist_directory=directorio_db
     )
-    print("✅ Base de datos vectorial creada y guardada en disco.")
+    print("[OK] Base de datos vectorial creada y guardada en disco.")
     return vectorstore
 
 

@@ -2,6 +2,20 @@
 
 Un sistema **RAG (Retrieval-Augmented Generation) totalmente local y privado** diseñado para consultar documentos de seguridad en la nube de AWS. Construido con tecnología Open Source, sin dependencias de APIs de pago como OpenAI, asegurando la máxima privacidad de los datos.
 
+## Contexto Académico y Aplicación de AWS NLP
+
+Este proyecto fue desarrollado como aplicación práctica y consolidación de conocimientos adquiridos en la formación de **AWS Academy - Machine Learning for Natural Language Processing (NLP)**, complementado con las bases de **AWS Academy - Cloud Architecting** y **Cloud Foundations**.
+
+El sistema traslada los fundamentos teóricos de procesamiento de lenguaje natural y machine learning a una arquitectura de ingeniería de software robusta, modular y ejecutable localmente:
+
+- **Preprocesamiento y Normalización de Texto:** Extracción de documentos PDF, depuración de metadatos ruidosos, remoción de patrones de copyright y segmentación de texto (*Chunking*) con solapamiento controlado.
+- **Representación Vectorial Densa (Embeddings):** Generación de vectores densos multilingües (`paraphrase-multilingual-MiniLM-L12-v2`) para recuperación semántica translingüe (consultas en español recuperando fragmentos en inglés).
+- **Recuperación Léxica Dispersa (Sparse Retrieval):** Implementación de `IndiceBM25` (Okapi BM25) con tokenización sin acentos y filtrado de *stopwords* para capturar siglas técnicas y términos exactos (`WORM`, `CloudHSM`, `WAF`).
+- **Fusión de Rankings y Re-ordenamiento Neuronal:** Combinación de señales densas y dispersas mediante *Reciprocal Rank Fusion* (RRF) y refinamiento de precisión con un *Cross-Encoder* multilingüe (`mmarco-mMiniLMv2-L12-H384-v1`).
+- **Modelado de Contexto Conversacional:** Resolución de correferencias anafóricas mediante reformulación de consultas (*Query Reformulation* con *Few-Shot Prompting*) y gestión de memoria con ventana deslizante (*Sliding Window*).
+- **Control de Generación y Guardrails:** Aislamiento de contexto contra inyección indirecta de prompts mediante esquemas XML y respuestas estructuradas en Markdown sin alucinaciones.
+- **Evaluación Científica de NLP:** Validación cuantitativa con el framework **Ragas** evaluando fidelidad (*Faithfulness*), relevancia de respuesta (*Answer Relevancy*), precisión de contexto (*Context Precision*) y recuperación de contexto (*Context Recall*).
+
 ## Características Principales
 - **100% Local y Privado:** Utiliza **Ollama** con el modelo **Llama 3.1** y **ChromaDB** para la persistencia de vectores. Ningún dato sale de tu máquina.
 - **Búsqueda Híbrida (Vectorial + BM25) y Re-Ranking (Cross-Encoder):** Combina recuperación semántica multilingüe (`paraphrase-multilingual-MiniLM-L12-v2`) con coincidencia léxica exacta (`IndiceBM25` + `Reciprocal Rank Fusion`) y re-ordenamiento neuronal (`cross-encoder/mmarco-mMiniLMv2-L12-H384-v1`) para capturar tanto conceptos generales como siglas técnicas poco frecuentes (`WORM`, `CloudHSM`, `WAF`).

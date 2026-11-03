@@ -97,7 +97,7 @@ def ejecutar_evaluacion():
     
     # Guardar reporte en CSV
     df_resultados.to_csv("reporte_evaluacion_rag.csv", index=False)
-    print("\n✅ Reporte completo guardado en 'reporte_evaluacion_rag.csv'")
+    print("\n[OK] Reporte completo guardado en 'reporte_evaluacion_rag.csv'")
     print("Abre este CSV en Excel para analizar en qué preguntas falló el RAG.")
 
 

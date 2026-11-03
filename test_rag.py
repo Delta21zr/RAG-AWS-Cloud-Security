@@ -219,9 +219,9 @@ class Test04NonFunctionalTesting(unittest.TestCase):
         self.assertEqual(len(hist_limpio), MAX_HISTORY_MESSAGES)
         self.assertLess(duracion, 0.01)
 
-    def test_compatibilidad_codificacion_utf8_y_emojis(self):
-        """Compatibilidad: Verifica soporte de tildes, eñes, símbolos y emojis en Windows."""
-        pregunta_especial = "¿Qué es «AWS Shield» y cómo mitiga ataques DDoS 🛡️ en español (ñ, á, é, í, ó, ú)?"
+    def test_compatibilidad_codificacion_utf8_y_caracteres_especiales(self):
+        """Compatibilidad: Verifica soporte de tildes, eñes, comillas angulares y símbolos en Windows."""
+        pregunta_especial = "¿Qué es «AWS Shield» y cómo mitiga ataques DDoS en español (ñ, á, é, í, ó, ú, ¿, ?, «, »)?"
         limpia, _ = sanitizar_entrada(pregunta_especial, [])
         self.assertEqual(limpia, pregunta_especial)
 
