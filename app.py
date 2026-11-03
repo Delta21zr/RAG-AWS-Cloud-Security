@@ -37,6 +37,8 @@ vectorstore, cadena_rag = cargar_sistema()
 if "mensajes" not in st.session_state:
     st.session_state.mensajes = []
 
+from langchain_core.messages import HumanMessage, AIMessage
+
 # --- BARRA LATERAL (SIDEBAR) ESTILO CHATGPT ---
 with st.sidebar:
     st.title("🤖 ChatGPT Local")
@@ -45,8 +47,8 @@ with st.sidebar:
         st.rerun()
     
     st.markdown("---")
-    st.markdown("### Recientes")
-    st.markdown("*(El historial se borra al cerrar la app)*")
+    st.markdown("### Estado de la Memoria")
+    st.caption(f"🧠 Mensajes recordados: {len(st.session_state.mensajes)}")
     st.markdown("📍 AWS Cloud Security RAG")
 
 # --- ÁREA PRINCIPAL DE CHAT ---
@@ -65,25 +67,40 @@ for msj in st.session_state.mensajes:
 pregunta = st.chat_input("Pregunta lo que quieras sobre tus documentos...")
 
 if pregunta:
-    # Guardar y mostrar pregunta
+    # 1. Guardar y mostrar la pregunta del usuario
     st.session_state.mensajes.append({"rol": "user", "contenido": pregunta})
     with st.chat_message("user", avatar="👤"):
         st.markdown(pregunta)
 
-    # Generar respuesta
+    # 2. Reconstruir el historial en el formato de LangChain (sin incluir la pregunta actual)
+    chat_history = []
+    for msg in st.session_state.mensajes[:-1]:
+        if msg["rol"] == "user":
+            chat_history.append(HumanMessage(content=msg["contenido"]))
+        elif msg["rol"] == "assistant":
+            chat_history.append(AIMessage(content=msg["contenido"]))
+
+    # 3. Generar respuesta considerando el contexto previo
     with st.chat_message("assistant", avatar="🧠"):
-        with st.spinner("Pensar..."):
-            # Obtener documentos fuente
-            documentos_fuente = vectorstore.similarity_search(pregunta, k=3)
-            
-            # Ejecutar cadena RAG
-            respuesta = cadena_rag.invoke(pregunta)
-            
-            # Mostrar respuesta
+        with st.spinner("Pensando y consultando documentos..."):
+            # Ejecutar cadena RAG pasando la pregunta y el historial acumulado
+            resultado = cadena_rag.invoke({
+                "question": pregunta,
+                "chat_history": chat_history,
+                "return_docs": True
+            })
+
+            respuesta = resultado["answer"]
+            documentos_fuente = resultado["docs"]
+            rephrased_query = resultado.get("rephrased_query", pregunta)
+
+            # Mostrar respuesta final
             st.markdown(respuesta)
-            
-            # Mostrar fuentes discretamente (Como lo haría ChatGPT al buscar en la web)
+
+            # Mostrar fuentes consultadas y si hubo reformulación por memoria
             with st.expander("🔍 Fuentes consultadas"):
+                if rephrased_query != pregunta:
+                    st.info(f"🔄 **Búsqueda adaptada con memoria:** *\"{rephrased_query}\"*")
                 for i, doc in enumerate(documentos_fuente):
                     st.caption(f"**Fuente {i+1}:** `{doc.metadata.get('source', 'Desconocido')}` (Pág {doc.metadata.get('page', 'N/A')})")
                     st.text(doc.page_content[:300] + "...")

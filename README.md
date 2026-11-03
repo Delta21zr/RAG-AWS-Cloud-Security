@@ -5,9 +5,10 @@ Un sistema **RAG (Retrieval-Augmented Generation) totalmente local y privado** d
 ## ✨ Características Principales
 - **100% Local y Privado:** Utiliza **Ollama** con el modelo **Llama 3.1** y **ChromaDB** para la persistencia de vectores. Ningún dato sale de tu máquina.
 - **Soporte Multilingüe (Cross-lingual RAG):** Gracias al modelo de embeddings `paraphrase-multilingual-MiniLM-L12-v2`, puedes consultar en **español** documentos que están escritos en **inglés** y obtener respuestas precisas en español.
+- **Memoria Conversacional (History-Aware Retriever):** Capacidad de mantener el contexto en diálogos multi-turno. Utiliza técnicas de reformulación de consultas (*Query Reformulation* con *Few-Shot Prompting*) para resolver referencias anafóricas (pronombres o preguntas de seguimiento) antes de consultar la base de datos vectorial.
 - **Guardrails Anti-alucinación:** Prompt de sistema riguroso (Temperatura 0) diseñado para forzar al modelo a responder "No tengo información suficiente..." si la respuesta no se encuentra en el contexto proporcionado.
 - **Evaluación Científica:** Evaluado metodológicamente utilizando el framework **Ragas** para asegurar altas métricas de Fidelidad (*Faithfulness*) y Relevancia de respuesta.
-- **Interfaz estilo ChatGPT:** Interfaz limpia y responsiva construida con **Streamlit**.
+- **Interfaz estilo ChatGPT:** Interfaz limpia y responsiva construida con **Streamlit**, con indicador de memoria e inspección de consultas adaptadas y fuentes.
 
 ## 🚀 Instalación y Uso
 

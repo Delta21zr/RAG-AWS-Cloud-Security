@@ -48,42 +48,101 @@ def crear_o_cargar_vectorstore(fragmentos, directorio_db="db"):
     print("✅ Base de datos vectorial creada y guardada en disco.")
     return vectorstore
 
+from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.prompts import MessagesPlaceholder
+from langchain_core.runnables import RunnableLambda
+
 def configurar_cadena_rag(vectorstore):
     print("\nConectando con Ollama (Llama 3.1)...")
     # Temperature 0 es vital para RAG: queremos precisión, no creatividad.
     llm = ChatOllama(model="llama3.1", temperature=0)
     
-    # Configuramos la BD como un "recuperador" de los 3 mejores fragmentos
+    # Configuramos la BD como un "recuperador" de los 5 mejores fragmentos
     retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
     
-    # GUARDRAIL: System prompt estricto anti-alucinaciones
-    template = """Actúa como un asistente técnico experto.
-    Utiliza ÚNICAMENTE el siguiente contexto para responder a la pregunta. 
-    Si la respuesta no se encuentra en el contexto, responde EXACTAMENTE: "No tengo información suficiente en los documentos proporcionados para responder a esta pregunta."
-    No inventes información, no uses tus conocimientos previos y no alucines.
+    # 1. Cadena de Reformulación de Preguntas (History-Aware con Few-Shot)
+    rephrase_system_prompt = (
+        "Dado un historial de conversación y la última pregunta del usuario, reformula la pregunta para que sea "
+        "una consulta de búsqueda directa e independiente en una base de datos vectorial.\n\n"
+        "REGLAS CRÍTICAS:\n"
+        "1. Conserva SIEMPRE el nombre del servicio o herramienta de AWS de la que se viene hablando "
+        "(ej. 'Amazon GuardDuty', 'EC2', 'KMS', 'S3'). NUNCA lo omitas ni lo reemplaces por generalidades como 'la seguridad en la nube'.\n"
+        "2. Devuelve SIEMPRE una PREGUNTA, NUNCA una respuesta ni afirmaciones.\n"
+        "3. Devuelve ÚNICAMENTE la pregunta reformulada, sin explicaciones ni texto introductorio.\n\n"
+        "Ejemplo 1:\n"
+        "Historial: Usuario pregunta '¿Qué es Amazon GuardDuty?' y el Asistente responde.\n"
+        "Pregunta actual: '¿Qué ejemplos de actividades maliciosas puede detectar en instancias EC2?'\n"
+        "Pregunta reformulada: '¿Qué ejemplos de actividades maliciosas puede detectar Amazon GuardDuty en instancias EC2?'\n\n"
+        "Ejemplo 2:\n"
+        "Historial: Usuario pregunta '¿Qué es AWS KMS?' y el Asistente responde.\n"
+        "Pregunta actual: '¿Cuáles son sus ventajas?'\n"
+        "Pregunta reformulada: '¿Cuáles son las ventajas de AWS KMS?'"
+    )
+    rephrase_prompt = ChatPromptTemplate.from_messages([
+        ("system", rephrase_system_prompt),
+        MessagesPlaceholder(variable_name="chat_history"),
+        ("human", "{question}"),
+    ])
+    rephrase_chain = rephrase_prompt | llm | StrOutputParser()
 
-    Contexto:
-    {context}
-
-    Pregunta: {question}
-    
-    Respuesta:"""
-    
-    prompt = ChatPromptTemplate.from_template(template)
+    # 2. Prompt técnico con GUARDRAIL anti-alucinaciones
+    qa_system_prompt = (
+        "Actúa como un asistente técnico experto en AWS Cloud Security.\n"
+        "Utiliza ÚNICAMENTE el siguiente contexto para responder a la pregunta.\n"
+        "Si la respuesta no se encuentra en el contexto, responde EXACTAMENTE: "
+        "'No tengo información suficiente en los documentos proporcionados para responder a esta pregunta.'\n"
+        "No inventes información, no uses tus conocimientos previos y no alucines.\n\n"
+        "Contexto:\n{context}"
+    )
+    qa_prompt = ChatPromptTemplate.from_messages([
+        ("system", qa_system_prompt),
+        MessagesPlaceholder(variable_name="chat_history"),
+        ("human", "{question}"),
+    ])
     
     # Función auxiliar para unir los textos recuperados
     def format_docs(docs):
         return "\n\n".join(doc.page_content for doc in docs)
     
-    # Magia de LCEL: Construimos la tubería (Pipeline)
-    rag_chain = (
-        {"context": retriever | format_docs, "question": RunnablePassthrough()}
-        | prompt
-        | llm
-        | StrOutputParser()
-    )
+    # Pipeline ejecutor que maneja preguntas directas o con historial
+    def ejecutar_pipeline(input_data):
+        if isinstance(input_data, str):
+            question = input_data
+            chat_history = []
+        else:
+            question = input_data.get("question", "")
+            chat_history = input_data.get("chat_history", [])
+
+        # Si hay historial previo, reformulamos la pregunta para ChromaDB
+        if chat_history:
+            search_query = rephrase_chain.invoke({
+                "chat_history": chat_history,
+                "question": question
+            })
+            print(f"--> [MEMORIA] Pregunta reformulada para ChromaDB: '{search_query}'")
+        else:
+            search_query = question
+
+        # Recuperamos los documentos pertinentes
+        docs = retriever.invoke(search_query)
+        context = format_docs(docs)
+
+        # Generamos la respuesta final
+        respuesta = (qa_prompt | llm | StrOutputParser()).invoke({
+            "context": context,
+            "chat_history": chat_history,
+            "question": question
+        })
+
+        if isinstance(input_data, dict) and input_data.get("return_docs", False):
+            return {
+                "answer": respuesta,
+                "docs": docs,
+                "rephrased_query": search_query
+            }
+        return respuesta
     
-    return rag_chain
+    return RunnableLambda(ejecutar_pipeline)
 
 if __name__ == "__main__":
     print("Cargando BD Vectorial desde el disco...")
@@ -91,29 +150,37 @@ if __name__ == "__main__":
     embeddings = HuggingFaceEmbeddings(model_name="paraphrase-multilingual-MiniLM-L12-v2")
     vectorstore = Chroma(persist_directory="db", embedding_function=embeddings)
     
-    # Inicializamos la Cadena LCEL
+    # Inicializamos la Cadena RAG con Memoria
     cadena_rag = configurar_cadena_rag(vectorstore)
     
     print("\n=============================================")
-    print("PRUEBA 1: Pregunta TÉCNICA (En Español con Modelo Multilingüe)")
+    print("TURNO 1: Pregunta directa")
     pregunta_1 = "¿Qué es EC2 y quién gestiona su sistema operativo?"
     print(f"Usuario: {pregunta_1}")
-    
-    # Vamos a ver qué recupera ChromaDB internamente
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
-    docs = retriever.invoke(pregunta_1)
-    print(f"\n--- Lo que ChromaDB encontró (Mejor coincidencia) ---")
-    if docs:
-        print(f"Fuente: {docs[0].metadata['source']}, Pág: {docs[0].metadata.get('page')}")
-        print(f"Texto: {docs[0].page_content[:200]}...\n-----------------------------------------------------")
-    
     respuesta_1 = cadena_rag.invoke(pregunta_1)
     print(f"\nLlama 3.1: {respuesta_1}")
     
     print("\n=============================================")
-    print("PRUEBA 2: Prueba de GUARDRAIL (Anti-alucinación)")
-    pregunta_2 = "¿Cuál es la receta secreta para hacer un pastel de chocolate?"
+    print("TURNO 2: Pregunta de seguimiento (REFERENCIA ANAFÓRICA: 'sus beneficios')")
+    pregunta_2 = "¿Cuáles son sus beneficios?"
     print(f"Usuario: {pregunta_2}")
-    respuesta_2 = cadena_rag.invoke(pregunta_2)
-    print(f"Llama 3.1: {respuesta_2}")
+    
+    # Simulamos el historial del turno anterior
+    historial = [
+        HumanMessage(content=pregunta_1),
+        AIMessage(content=respuesta_1)
+    ]
+    
+    respuesta_2 = cadena_rag.invoke({
+        "question": pregunta_2,
+        "chat_history": historial
+    })
+    print(f"\nLlama 3.1: {respuesta_2}")
+    
+    print("\n=============================================")
+    print("TURNO 3: Prueba de GUARDRAIL (Anti-alucinación)")
+    pregunta_3 = "¿Cuál es la receta secreta para hacer un pastel de chocolate?"
+    print(f"Usuario: {pregunta_3}")
+    respuesta_3 = cadena_rag.invoke(pregunta_3)
+    print(f"\nLlama 3.1: {respuesta_3}")
     print("=============================================")
