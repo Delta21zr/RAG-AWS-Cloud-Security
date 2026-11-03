@@ -114,7 +114,7 @@ El script [evaluar_rag.py](file:///c:/Users/Victus/Desktop/RAG%20local/evaluar_r
 - **Faithfulness (Fidelidad):** Evalua si cada afirmacion de la respuesta generada se puede inferir directamente del contexto provisto (tasa de no-alucinacion).
 - **Answer Relevancy:** Evalua si la respuesta responde directamente a lo preguntado sin divagaciones.
 
-### B. Suite de Calidad de Software QA (46 Tests Automatizados)
+### B. Suite de Calidad de Software QA (49 Tests Automatizados)
 En [test_rag.py](file:///c:/Users/Victus/Desktop/RAG%20local/test_rag.py) se estructuro una suite ejecutable bajo el framework estandar de QA:
 1. **Pruebas Unitarias:** Sanitizacion de entradas, limpieza de texto, tokenizacion BM25 y logica RRF de forma aislada.
 2. **Pruebas de Integracion:** Enlace de Embeddings con ChromaDB, carga de Cross-Encoder real, recarga de BM25 en caliente tras subida de PDFs y sincronizacion de contratos entre modulos.
@@ -122,6 +122,7 @@ En [test_rag.py](file:///c:/Users/Victus/Desktop/RAG%20local/test_rag.py) se est
 4. **Pruebas de Caja Blanca y Caja Negra:** Analisis de cobertura de ramas condicionales y analisis de valores limite (0, 1, 1000 y 1001 caracteres).
 5. **Pruebas No Funcionales:** Latencia de busqueda (< 0.5s), concurrencia (15 peticiones simultaneas en hilos paralelos), resistencia a Prompt Injection indirecto y compatibilidad UTF-8 en Windows.
 6. **Pruebas de Mantenimiento:** Pruebas de Humo (*Smoke Tests*), confirmacion de correccion de bugs y no-regresion.
+7. **Pruebas de Soporte Bilingue:** Validacion de respuestas de validacion segun idioma (ES/EN), recuperacion estructurada en ingles y activacion del guardrail anti-alucinaciones en ingles.
 
 ---
 

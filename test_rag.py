@@ -645,7 +645,57 @@ class Test11DynamicPDFIngestion(unittest.TestCase):
             codigo_app = f.read()
         self.assertIn("sanitizar_nombre_pdf", codigo_app)
         self.assertIn("procesar_y_agregar_pdf", codigo_app)
-        self.assertIn("Ingesta de documentos (PDF)", codigo_app)
+        self.assertIn("selector_idioma_top", codigo_app)
+        self.assertIn("I18N", codigo_app)
+
+
+# =====================================================================
+# 12. PRUEBAS DE SOPORTE BILINGÜE (ESPAÑOL / ENGLISH)
+# =====================================================================
+class Test12BilingualSupport(unittest.TestCase):
+    """Pruebas unitarias y de integración para la arquitectura bilingüe (ES / EN)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.vs = get_shared_vectorstore()
+
+    def test_unit_respuestas_vacias_segun_idioma(self):
+        from langchain_core.language_models.fake_chat_models import FakeListChatModel
+        llm_falso = FakeListChatModel(responses=["OK"])
+        with patch("rag_pipeline.ChatOllama", return_value=llm_falso):
+            cadena = configurar_cadena_rag(self.vs, usar_reranker=False, usar_hibrida=False)
+
+        res_es = cadena.invoke({"question": "   ", "idioma": "es"})
+        res_en = cadena.invoke({"question": "   ", "idioma": "en"})
+        self.assertEqual(res_es, "Por favor, ingresa una pregunta válida sobre los documentos.")
+        self.assertEqual(res_en, "Please enter a valid question about the documents.")
+
+    def test_integracion_pipeline_ingles_recupera_y_estructura(self):
+        from langchain_core.language_models.fake_chat_models import FakeListChatModel
+        llm_falso = FakeListChatModel(responses=["Rephrased query", "English answer"])
+        with patch("rag_pipeline.ChatOllama", return_value=llm_falso):
+            cadena = configurar_cadena_rag(self.vs, usar_reranker=True, usar_hibrida=True)
+
+        res = cadena.invoke({
+            "question": "What is Amazon GuardDuty?",
+            "idioma": "en",
+            "return_docs": True
+        })
+        self.assertEqual(len(res["docs"]), RERANK_TOP_N)
+        texto_docs = " ".join(d.page_content.lower() for d in res["docs"])
+        self.assertIn("guardduty", texto_docs)
+
+    def test_integracion_guardrail_en_live(self):
+        """Verifica que el guardrail en inglés rechace consultas fuera de contexto."""
+        cadena = configurar_cadena_rag(self.vs, usar_reranker=False, usar_hibrida=False)
+        respuesta = cadena.invoke({
+            "question": "Who won the FIFA 2022 World Cup and how do you bake chocolate cake?",
+            "idioma": "en"
+        })
+        self.assertIn(
+            "I do not have sufficient information in the provided documents to answer this question",
+            respuesta
+        )
 
 
 if __name__ == "__main__":

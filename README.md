@@ -24,7 +24,8 @@ Para un desglose técnico exhaustivo de los fundamentos teóricos de NLP, decisi
 - **Memoria Conversacional (History-Aware Retriever):** Capacidad de mantener el contexto en diálogos multi-turno con ventana deslizante (*Sliding Window*), utilizando reformulación de consultas (*Query Reformulation* con *Few-Shot Prompting*) para resolver referencias anafóricas antes de consultar la base de datos.
 - **Guardrails Anti-alucinación y Seguridad OWASP LLM:** Prompt de sistema riguroso (Temperatura 0), aislamiento de contexto mediante delimitadores XML (`<contexto_documentos>`) contra *Indirect Prompt Injection* y validación/sanitización de entradas.
 - **Ingesta Dinámica de PDFs en Caliente:** Carga e indexación de nuevos manuales PDF directamente desde la interfaz web con validación de firma mágica (`%PDF-`), prevención de *Path Traversal*, deduplicación de fragmentos existentes y reconstrucción automática del índice léxico BM25 sin reiniciar el servidor.
-- **Evaluación Científica y Pruebas Automatizadas:** Evaluado metodológicamente con **Ragas** (*Context Precision*, *Context Recall*, *Faithfulness* y *Answer Relevancy*) e incluye una suite de 46 tests automatizados (`test_rag.py`).
+- **Soporte Bilingüe Nativo (Español / English):** Selector de idioma en la parte superior que conmuta instantáneamente toda la interfaz, telemetría, glosario, reformulación de memoria y guardrails anti-alucinaciones entre español e inglés.
+- **Evaluación Científica y Pruebas Automatizadas:** Evaluado metodológicamente con **Ragas** (*Context Precision*, *Context Recall*, *Faithfulness* y *Answer Relevancy*) e incluye una suite de 49 tests automatizados (`test_rag.py`).
 - **Interfaz Sobria y Minimalista:** Interfaz construida con **Streamlit**, con transmisión de respuestas en vivo (*Streaming*), tooltips técnicos interactivos, glosario integrado, persistencia de fuentes consultadas y manejo de errores.
 
 ## Instalación y Uso
