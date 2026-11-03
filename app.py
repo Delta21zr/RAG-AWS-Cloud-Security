@@ -416,9 +416,9 @@ INFO_ICON_SVG = (
 )
 
 
-# 4. Caché para no recargar el modelo
+# 4. Caché para no recargar el modelo (_version invalida cachés anteriores tras actualizaciones del pipeline)
 @st.cache_resource
-def cargar_sistema():
+def cargar_sistema(_version="v2_bilingue"):
     embeddings = HuggingFaceEmbeddings(model_name="paraphrase-multilingual-MiniLM-L12-v2")
     vectorstore = Chroma(persist_directory="db", embedding_function=embeddings)
     cadena = configurar_cadena_rag(vectorstore)
@@ -472,18 +472,9 @@ def renderizar_fuentes(fuentes, pregunta_original="", rephrased_query="", tiempo
             )
 
 
-# --- BARRA LATERAL (SIDEBAR) ---
-with st.sidebar:
-    st.markdown(f"<div class='sidebar-brand'>{t['sidebar_brand']}</div>", unsafe_allow_html=True)
-    st.markdown(f"<div class='sidebar-title'>{t['sidebar_title']}</div>", unsafe_allow_html=True)
-
-    if st.button(t["new_session"], use_container_width=True, type="secondary"):
-        st.session_state.mensajes = []
-        st.rerun()
-
-    mensajes_activos = min(len(st.session_state.mensajes), MAX_HISTORY_MESSAGES)
-    st.markdown(
-        f"""
+def generar_html_meta_panel(mensajes_activos):
+    """Genera el bloque HTML de telemetría lateral con el contador de memoria actualizado en tiempo real."""
+    return f"""
         <div class="meta-panel">
             <div class="meta-row">
                 <span class="meta-label-group">
@@ -536,9 +527,21 @@ with st.sidebar:
                 <span class="meta-value">{t['temp_value']}</span>
             </div>
         </div>
-        """,
-        unsafe_allow_html=True
-    )
+    """
+
+
+# --- BARRA LATERAL (SIDEBAR) ---
+with st.sidebar:
+    st.markdown(f"<div class='sidebar-brand'>{t['sidebar_brand']}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='sidebar-title'>{t['sidebar_title']}</div>", unsafe_allow_html=True)
+
+    if st.button(t["new_session"], use_container_width=True, type="secondary"):
+        st.session_state.mensajes = []
+        st.rerun()
+
+    meta_panel_placeholder = st.empty()
+    mensajes_activos = min(len(st.session_state.mensajes), MAX_HISTORY_MESSAGES)
+    meta_panel_placeholder.markdown(generar_html_meta_panel(mensajes_activos), unsafe_allow_html=True)
 
     with st.expander(t["ingest_expander"]):
         archivos_subidos = st.file_uploader(
@@ -617,8 +620,9 @@ if total_fragmentos == 0:
         unsafe_allow_html=True
     )
 
+empty_state_placeholder = st.empty()
 if len(st.session_state.mensajes) == 0:
-    st.markdown(
+    empty_state_placeholder.markdown(
         f"""
         <div class="empty-state">
             <div class="empty-kicker">{t['empty_kicker']}</div>
@@ -653,9 +657,14 @@ pregunta = st.chat_input(
 if pregunta and pregunta.strip():
     pregunta_limpia = pregunta.strip()
     idioma_actual = st.session_state.idioma
+    empty_state_placeholder.empty()
 
     # 1. Guardar y mostrar la pregunta del usuario
     st.session_state.mensajes.append({"rol": "user", "contenido": pregunta_limpia, "idioma": idioma_actual})
+    meta_panel_placeholder.markdown(
+        generar_html_meta_panel(min(len(st.session_state.mensajes), MAX_HISTORY_MESSAGES)),
+        unsafe_allow_html=True
+    )
     with st.chat_message("user"):
         st.markdown(f"<div class='role-label'>{t['role_user']}</div>", unsafe_allow_html=True)
         st.markdown(pregunta_limpia)
@@ -706,6 +715,10 @@ if pregunta and pregunta.strip():
                 "tiempo_s": tiempo_total,
                 "idioma": idioma_actual
             })
+            meta_panel_placeholder.markdown(
+                generar_html_meta_panel(min(len(st.session_state.mensajes), MAX_HISTORY_MESSAGES)),
+                unsafe_allow_html=True
+            )
         except Exception as e:
             st.error(t["connection_error"])
             st.caption(f"Excepción / Exception: {type(e).__name__}")

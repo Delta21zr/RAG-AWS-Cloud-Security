@@ -397,7 +397,8 @@ def configurar_cadena_rag(vectorstore, usar_reranker=True, usar_hibrida=True):
         "   - **Capacidades / Características Clave:** Lista con viñetas destacando los conceptos o términos clave en negrita.\n"
         "   - **Casos de Uso / Funcionamiento:** Lista con viñetas si el contexto detalla cómo opera, qué detecta o con qué se integra.\n"
         "2. Sin meta-lenguaje de documentos: NUNCA comiences la respuesta con frases como 'Según el documento con id...', 'En la etiqueta <documento>' o citando nombres de archivos y rutas de carpetas. La interfaz ya muestra las referencias documentales de manera independiente. Ve directo a la explicación técnica en español.\n"
-        "3. Precisión y concisión: Sé riguroso, evita redundancias o repeticiones de la misma idea y mantén un tono profesional sin emojis.\n\n"
+        "3. Idioma obligatorio: Responde SIEMPRE íntegramente en ESPAÑOL, incluso si los fragmentos o mensajes anteriores están en inglés.\n"
+        "4. Precisión y concisión: Sé riguroso, evita redundancias o repeticiones de la misma idea y mantén un tono profesional sin emojis.\n\n"
         "<contexto_documentos>\n{context}\n</contexto_documentos>"
     )
     qa_prompt_es = ChatPromptTemplate.from_messages([
@@ -421,7 +422,8 @@ def configurar_cadena_rag(vectorstore, usar_reranker=True, usar_hibrida=True):
         "   - **Key Capabilities / Features:** Bulleted list highlighting key concepts in bold.\n"
         "   - **Use Cases / Operation:** Bulleted list if the context details how it operates, what it detects, or what it integrates with.\n"
         "2. No document meta-language: NEVER start responses with phrases like 'According to document id...', 'In tag <documento>' or citing file paths and folders. The UI displays document references independently. Go straight to the technical explanation in English.\n"
-        "3. Precision and conciseness: Be rigorous, avoid redundancies, and maintain a professional tone without emojis.\n\n"
+        "3. Mandatory language: ALWAYS write your entire response strictly in ENGLISH, using the exact English headings above, even if previous messages in the conversation were in Spanish.\n"
+        "4. Precision and conciseness: Be rigorous, avoid redundancies, and maintain a professional tone without emojis.\n\n"
         "<contexto_documentos>\n{context}\n</contexto_documentos>"
     )
     qa_prompt_en = ChatPromptTemplate.from_messages([

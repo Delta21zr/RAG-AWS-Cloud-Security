@@ -697,6 +697,16 @@ class Test12BilingualSupport(unittest.TestCase):
             respuesta
         )
 
+    def test_sistema_e2e_respuesta_estructurada_en_ingles(self):
+        """Verifica que al consultar en modo inglés ('idioma': 'en'), el LLM responda estructuradamente en inglés."""
+        cadena = configurar_cadena_rag(self.vs, usar_reranker=True, usar_hibrida=True)
+        respuesta = cadena.invoke({
+            "question": "what is amazon guardduty",
+            "idioma": "en"
+        })
+        self.assertIn("General Definition", respuesta)
+        self.assertNotIn("Definición / Propósito General", respuesta)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

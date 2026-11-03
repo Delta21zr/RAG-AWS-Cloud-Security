@@ -114,7 +114,7 @@ El script [evaluar_rag.py](file:///c:/Users/Victus/Desktop/RAG%20local/evaluar_r
 - **Faithfulness (Fidelidad):** Evalua si cada afirmacion de la respuesta generada se puede inferir directamente del contexto provisto (tasa de no-alucinacion).
 - **Answer Relevancy:** Evalua si la respuesta responde directamente a lo preguntado sin divagaciones.
 
-### B. Suite de Calidad de Software QA (49 Tests Automatizados)
+### B. Suite de Calidad de Software QA (50 Tests Automatizados)
 En [test_rag.py](file:///c:/Users/Victus/Desktop/RAG%20local/test_rag.py) se estructuro una suite ejecutable bajo el framework estandar de QA:
 1. **Pruebas Unitarias:** Sanitizacion de entradas, limpieza de texto, tokenizacion BM25 y logica RRF de forma aislada.
 2. **Pruebas de Integracion:** Enlace de Embeddings con ChromaDB, carga de Cross-Encoder real, recarga de BM25 en caliente tras subida de PDFs y sincronizacion de contratos entre modulos.
