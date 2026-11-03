@@ -16,6 +16,8 @@ El sistema traslada los fundamentos teóricos de procesamiento de lenguaje natur
 - **Control de Generación y Guardrails:** Aislamiento de contexto contra inyección indirecta de prompts mediante esquemas XML y respuestas estructuradas en Markdown sin alucinaciones.
 - **Evaluación Científica de NLP:** Validación cuantitativa con el framework **Ragas** evaluando fidelidad (*Faithfulness*), relevancia de respuesta (*Answer Relevancy*), precisión de contexto (*Context Precision*) y recuperación de contexto (*Context Recall*).
 
+Para un desglose técnico exhaustivo de los fundamentos teóricos de NLP, decisiones de arquitectura, retos de ingeniería superados y la matriz completa de competencias aplicadas, consulta el [Caso de Estudio Técnico (CASE_STUDY.md)](CASE_STUDY.md).
+
 ## Características Principales
 - **100% Local y Privado:** Utiliza **Ollama** con el modelo **Llama 3.1** y **ChromaDB** para la persistencia de vectores. Ningún dato sale de tu máquina.
 - **Búsqueda Híbrida (Vectorial + BM25) y Re-Ranking (Cross-Encoder):** Combina recuperación semántica multilingüe (`paraphrase-multilingual-MiniLM-L12-v2`) con coincidencia léxica exacta (`IndiceBM25` + `Reciprocal Rank Fusion`) y re-ordenamiento neuronal (`cross-encoder/mmarco-mMiniLMv2-L12-H384-v1`) para capturar tanto conceptos generales como siglas técnicas poco frecuentes (`WORM`, `CloudHSM`, `WAF`).
